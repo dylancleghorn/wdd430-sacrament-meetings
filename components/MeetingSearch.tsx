@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useDebouncedCallback } from "use-debounce";
 
@@ -9,6 +9,13 @@ export function MeetingSearch() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const query = searchParams.get("query") ?? "";
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (inputRef.current && inputRef.current.value !== query) {
+      inputRef.current.value = query;
+    }
+  }, [query]);
 
   const updateSearch = useCallback((term: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -21,7 +28,7 @@ export function MeetingSearch() {
 
     params.delete("page");
     const queryString = params.toString();
-    router.replace(queryString ? `${pathname}?${queryString}` : pathname);
+    router.push(queryString ? `${pathname}?${queryString}` : pathname);
   }, [pathname, router, searchParams]);
 
   const debouncedSearch = useDebouncedCallback(updateSearch, 300);
@@ -30,7 +37,7 @@ export function MeetingSearch() {
     <label className="mt-8 block max-w-xl">
       <span className="text-sm font-semibold text-stone-800">Search meetings</span>
       <input
-        key={query}
+        ref={inputRef}
         type="search"
         name="query"
         defaultValue={query}

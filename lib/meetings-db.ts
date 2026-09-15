@@ -58,6 +58,7 @@ export async function getMeetings(
   }
 
   const query = input?.query?.trim() ?? "";
+  const searchPattern = toSearchPattern(query);
   const pageSize = Math.max(1, Math.floor(input?.pageSize ?? MEETINGS_PER_PAGE));
   const requestedPage = Math.max(1, Math.floor(input?.page ?? 1));
   const countRows = await sql`
@@ -65,10 +66,10 @@ export async function getMeetings(
     FROM meetings
     WHERE (
       ${query} = ''
-      OR presiding ILIKE ${`%${query}%`}
-      OR conducting ILIKE ${`%${query}%`}
-      OR meeting_type ILIKE ${`%${query}%`}
-      OR speakers::text ILIKE ${`%${query}%`}
+      OR presiding ILIKE ${searchPattern} ESCAPE '\\'
+      OR conducting ILIKE ${searchPattern} ESCAPE '\\'
+      OR meeting_type ILIKE ${searchPattern} ESCAPE '\\'
+      OR speakers::text ILIKE ${searchPattern} ESCAPE '\\'
     )
   ` as { count: string }[];
   const totalMeetings = Number(countRows[0]?.count ?? 0);
@@ -80,10 +81,10 @@ export async function getMeetings(
     FROM meetings
     WHERE (
       ${query} = ''
-      OR presiding ILIKE ${`%${query}%`}
-      OR conducting ILIKE ${`%${query}%`}
-      OR meeting_type ILIKE ${`%${query}%`}
-      OR speakers::text ILIKE ${`%${query}%`}
+      OR presiding ILIKE ${searchPattern} ESCAPE '\\'
+      OR conducting ILIKE ${searchPattern} ESCAPE '\\'
+      OR meeting_type ILIKE ${searchPattern} ESCAPE '\\'
+      OR speakers::text ILIKE ${searchPattern} ESCAPE '\\'
     )
     ORDER BY date DESC
     LIMIT ${pageSize}
@@ -232,4 +233,8 @@ function toIsoDate(date: string | Date): string {
   }
 
   return match[1];
+}
+
+function toSearchPattern(query: string): string {
+  return `%${query.replace(/[\\%_]/g, "\\$&")}%`;
 }

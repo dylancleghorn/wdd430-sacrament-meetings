@@ -5,7 +5,17 @@ export async function GET(request: Request) {
   const date = searchParams.get("date");
 
   if (date) {
-    return Response.json(await getMeetings(date));
+    if (!isIsoDate(date)) {
+      return Response.json({ error: "Date must use the YYYY-MM-DD format" }, { status: 400 });
+    }
+
+    const meetings = await getMeetings(date);
+    return Response.json({
+      meetings,
+      totalMeetings: meetings.length,
+      currentPage: 1,
+      totalPages: 1,
+    });
   }
 
   const page = Number(searchParams.get("page"));
@@ -15,4 +25,13 @@ export async function GET(request: Request) {
       page: Number.isSafeInteger(page) && page > 0 ? page : 1,
     }),
   );
+}
+
+function isIsoDate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false;
+  }
+
+  const parsed = new Date(`${value}T12:00:00Z`);
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
 }

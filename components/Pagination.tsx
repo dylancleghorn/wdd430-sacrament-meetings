@@ -11,8 +11,7 @@ type PaginationProps = {
 export function Pagination({ currentPage, totalPages }: PaginationProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const pageFromUrl = Number(searchParams.get("page"));
-  const page = Number.isSafeInteger(pageFromUrl) && pageFromUrl > 0 ? pageFromUrl : currentPage;
+  const page = currentPage;
 
   if (totalPages <= 1) {
     return null;
