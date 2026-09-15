@@ -1,9 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
+import { connection } from "next/server";
 import { formatMeetingDate, getCurrentMeeting, getMeetingTypeLabel } from "@/lib/meetings-db";
 
-export default function Home() {
-  const currentMeeting = getCurrentMeeting();
+export default async function Home() {
+  await connection();
+  const currentMeeting = await getCurrentMeeting();
 
   return (
     <main className="flex flex-1 items-start bg-stone-100 px-5 py-12 sm:px-8 sm:py-16">
@@ -19,10 +21,14 @@ export default function Home() {
 
           <section className="mt-10 rounded-2xl border border-stone-200 bg-white p-7 text-left shadow-sm sm:p-9">
             <p className="text-sm font-semibold uppercase tracking-wide text-[var(--church-blue-dark)]">Current program</p>
-            <h2 className="mt-2 font-serif text-2xl font-semibold text-stone-950">{getMeetingTypeLabel(currentMeeting.meetingType)}</h2>
-            <p className="mt-1 text-stone-600">{formatMeetingDate(currentMeeting.date)}</p>
+            {currentMeeting ? (
+              <>
+                <h2 className="mt-2 font-serif text-2xl font-semibold text-stone-950">{getMeetingTypeLabel(currentMeeting.meetingType)}</h2>
+                <p className="mt-1 text-stone-600">{formatMeetingDate(currentMeeting.date)}</p>
+              </>
+            ) : <p className="mt-2 text-stone-600">A meeting program has not been published yet.</p>}
             <div className="mt-6 flex flex-wrap gap-3">
-              <Link href="/meetings/current" className="rounded-lg bg-[var(--church-blue)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--church-blue-dark)]">
+              <Link href={currentMeeting ? "/meetings/current" : "/meetings"} className="rounded-lg bg-[var(--church-blue)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--church-blue-dark)]">
                 View current program
               </Link>
               <Link href="/meetings" className="rounded-lg border border-stone-300 px-4 py-2.5 text-sm font-semibold text-stone-800 transition hover:bg-stone-100">

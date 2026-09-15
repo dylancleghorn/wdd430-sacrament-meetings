@@ -8,7 +8,7 @@ export async function GET(_request: Request, context: RouteContext<"/api/meeting
     return Response.json({ error: "Meeting ID must be a whole number" }, { status: 400 });
   }
 
-  const meeting = getMeetingById(meetingId);
+  const meeting = await getMeetingById(meetingId);
 
   if (!meeting) {
     return Response.json({ error: "Meeting not found" }, { status: 404 });
