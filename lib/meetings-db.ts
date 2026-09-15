@@ -1,7 +1,7 @@
 import { neon } from "@neondatabase/serverless";
 import type { MeetingType, SacramentMeeting } from "./types";
 
-const MEETINGS_PER_PAGE = 5;
+const MEETINGS_PER_PAGE = 4;
 
 type MeetingRow = {
   id: number;
