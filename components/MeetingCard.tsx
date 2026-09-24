@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { deleteMeeting } from "@/lib/actions";
+import { DeleteMeetingButton } from "@/components/DeleteMeetingButton";
 import { formatMeetingDate, getMeetingTypeLabel } from "@/lib/meetings-db";
 import type { SacramentMeeting } from "@/lib/types";
 
@@ -25,10 +25,9 @@ export function MeetingCard({ meeting }: { meeting: SacramentMeeting }) {
           {speakers.length > 0 && ` · ${speakers.length} speaker${speakers.length === 1 ? "" : "s"}`}
         </p>
       </Link>
-      <form action={deleteMeeting} className="border-t border-stone-200 px-5 py-3">
-        <input name="id" type="hidden" value={meeting.id} />
-        <button className="text-sm font-semibold text-red-700 hover:text-red-900" type="submit">Delete meeting</button>
-      </form>
+      <div className="border-t border-stone-200 px-5 py-3">
+        <DeleteMeetingButton meetingId={meeting.id} />
+      </div>
     </li>
   );
 }
