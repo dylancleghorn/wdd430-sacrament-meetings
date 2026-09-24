@@ -1,16 +1,35 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { deleteMeeting } from "@/lib/actions";
 
 export function DeleteMeetingButton({ meetingId }: { meetingId: number }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isOpen]);
+
+  function openDialog() {
+    dialogRef.current?.showModal();
+    setIsOpen(true);
+  }
 
   return (
     <>
       <button
         className="text-sm font-semibold text-red-700 hover:text-red-900"
-        onClick={() => dialogRef.current?.showModal()}
+        onClick={openDialog}
         type="button"
       >
         Delete meeting
@@ -18,7 +37,8 @@ export function DeleteMeetingButton({ meetingId }: { meetingId: number }) {
 
       <dialog
         aria-labelledby={`delete-meeting-${meetingId}-title`}
-        className="w-full max-w-md rounded-xl border border-stone-200 bg-white p-0 text-stone-900 shadow-2xl backdrop:bg-slate-950/40"
+        className="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-md rounded-xl border border-stone-200 bg-white p-0 text-stone-900 shadow-2xl backdrop:bg-slate-950/40"
+        onClose={() => setIsOpen(false)}
         ref={dialogRef}
       >
         <div className="p-6">
