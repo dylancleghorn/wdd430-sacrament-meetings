@@ -10,12 +10,11 @@ export async function GET(request: Request) {
     }
 
     const meetings = await getMeetings(date);
-    return Response.json({
-      meetings,
-      totalMeetings: meetings.length,
-      currentPage: 1,
-      totalPages: 1,
-    });
+    return Response.json(meetings);
+  }
+
+  if (!searchParams.has("query") && !searchParams.has("page")) {
+    return Response.json(await getMeetings());
   }
 
   const page = Number(searchParams.get("page"));

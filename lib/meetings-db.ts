@@ -33,14 +33,15 @@ export type MeetingListResult = {
   totalMeetings: number;
 };
 
+type MeetingPageTotals = Pick<MeetingListResult, "totalMeetings" | "totalPages">;
+
 export function getMeetings(date?: string | null): Promise<SacramentMeeting[]>;
 export function getMeetings(query: MeetingListQuery): Promise<MeetingListResult>;
 export async function getMeetings(
   input: string | null | MeetingListQuery = null,
 ): Promise<SacramentMeeting[] | MeetingListResult> {
-  const sql = getDatabaseClient();
-
   if (typeof input === "string" || input === null) {
+    const sql = getDatabaseClient();
     const rows = typeof input === "string"
       ? await sql`
           SELECT *
@@ -61,21 +62,10 @@ export async function getMeetings(
   const searchPattern = toSearchPattern(query);
   const pageSize = Math.max(1, Math.floor(input?.pageSize ?? MEETINGS_PER_PAGE));
   const requestedPage = Math.max(1, Math.floor(input?.page ?? 1));
-  const countRows = await sql`
-    SELECT COUNT(*)::text AS count
-    FROM meetings
-    WHERE (
-      ${query} = ''
-      OR presiding ILIKE ${searchPattern} ESCAPE '\\'
-      OR conducting ILIKE ${searchPattern} ESCAPE '\\'
-      OR meeting_type ILIKE ${searchPattern} ESCAPE '\\'
-      OR speakers::text ILIKE ${searchPattern} ESCAPE '\\'
-    )
-  ` as { count: string }[];
-  const totalMeetings = Number(countRows[0]?.count ?? 0);
-  const totalPages = Math.max(1, Math.ceil(totalMeetings / pageSize));
+  const { totalMeetings, totalPages } = await getMeetingsTotalPages(query, pageSize);
   const currentPage = Math.min(requestedPage, totalPages);
   const offset = (currentPage - 1) * pageSize;
+  const sql = getDatabaseClient();
   const rows = await sql`
     SELECT *
     FROM meetings
@@ -95,6 +85,32 @@ export async function getMeetings(
     meetings: rows.map(toSacramentMeeting),
     currentPage,
     totalPages,
+    totalMeetings,
+  };
+}
+
+export async function getMeetingsTotalPages(
+  query: string | null = null,
+  pageSize = MEETINGS_PER_PAGE,
+): Promise<MeetingPageTotals> {
+  const normalizedQuery = query?.trim() ?? "";
+  const searchPattern = toSearchPattern(normalizedQuery);
+  const normalizedPageSize = Math.max(1, Math.floor(pageSize));
+  const sql = getDatabaseClient();
+  const countRows = await sql`
+    SELECT COUNT(*)::text AS count
+    FROM meetings
+    WHERE (
+      ${normalizedQuery} = ''
+      OR presiding ILIKE ${searchPattern} ESCAPE '\\'
+      OR conducting ILIKE ${searchPattern} ESCAPE '\\'
+      OR meeting_type ILIKE ${searchPattern} ESCAPE '\\'
+      OR speakers::text ILIKE ${searchPattern} ESCAPE '\\'
+    )
+  ` as { count: string }[];
+  const totalMeetings = Number(countRows[0]?.count ?? 0);
+  return {
+    totalPages: Math.max(1, Math.ceil(totalMeetings / normalizedPageSize)),
     totalMeetings,
   };
 }
