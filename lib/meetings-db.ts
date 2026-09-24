@@ -156,24 +156,68 @@ export async function getCurrentMeeting(referenceDate = new Date()): Promise<Sac
   return upcomingRows[0] ? toSacramentMeeting(upcomingRows[0]) : null;
 }
 
-// These mutations are intentionally deferred until the Week 04 forms are built.
-export async function addMeeting(_meeting: Omit<SacramentMeeting, "id">): Promise<never> {
-  void _meeting;
-  throw new Error("Creating meetings will be available in Week 04.");
+export async function addMeeting(meeting: Omit<SacramentMeeting, "id">): Promise<void> {
+  const sql = getDatabaseClient();
+
+  await sql`
+    INSERT INTO meetings (
+      date, meeting_type, presiding, conducting, announcements, opening_hymn,
+      opening_prayer, ward_business, stake_business, sacrament_hymn, speakers,
+      closing_hymn, closing_prayer
+    )
+    VALUES (
+      ${meeting.date}::date, ${meeting.meetingType}, ${meeting.presiding},
+      ${meeting.conducting}, ${meeting.announcements ?? []},
+      ${JSON.stringify(meeting.openingHymn)}::jsonb, ${meeting.openingPrayer},
+      ${JSON.stringify(meeting.wardBusiness)}::jsonb, ${meeting.stakeBusiness},
+      ${JSON.stringify(meeting.sacramentHymn)}::jsonb,
+      ${JSON.stringify(meeting.speakers)}::jsonb,
+      ${JSON.stringify(meeting.closingHymn)}::jsonb, ${meeting.closingPrayer}
+    )
+  `;
 }
 
 export async function updateMeeting(
-  _id: number,
-  _meeting: Omit<SacramentMeeting, "id">,
-): Promise<never> {
-  void _id;
-  void _meeting;
-  throw new Error("Updating meetings will be available in Week 04.");
+  id: number,
+  meeting: Omit<SacramentMeeting, "id">,
+): Promise<void> {
+  const sql = getDatabaseClient();
+  const rows = await sql`
+    UPDATE meetings
+    SET
+      date = ${meeting.date}::date,
+      meeting_type = ${meeting.meetingType},
+      presiding = ${meeting.presiding},
+      conducting = ${meeting.conducting},
+      announcements = ${meeting.announcements ?? []},
+      opening_hymn = ${JSON.stringify(meeting.openingHymn)}::jsonb,
+      opening_prayer = ${meeting.openingPrayer},
+      ward_business = ${JSON.stringify(meeting.wardBusiness)}::jsonb,
+      stake_business = ${meeting.stakeBusiness},
+      sacrament_hymn = ${JSON.stringify(meeting.sacramentHymn)}::jsonb,
+      speakers = ${JSON.stringify(meeting.speakers)}::jsonb,
+      closing_hymn = ${JSON.stringify(meeting.closingHymn)}::jsonb,
+      closing_prayer = ${meeting.closingPrayer}
+    WHERE id = ${id}
+    RETURNING id
+  ` as { id: number }[];
+
+  if (rows.length === 0) {
+    throw new Error("The meeting could not be found.");
+  }
 }
 
-export async function deleteMeeting(_id: number): Promise<never> {
-  void _id;
-  throw new Error("Deleting meetings will be available in Week 04.");
+export async function deleteMeeting(id: number): Promise<void> {
+  const sql = getDatabaseClient();
+  const rows = await sql`
+    DELETE FROM meetings
+    WHERE id = ${id}
+    RETURNING id
+  ` as { id: number }[];
+
+  if (rows.length === 0) {
+    throw new Error("The meeting could not be found.");
+  }
 }
 
 export function formatMeetingDate(date: string): string {

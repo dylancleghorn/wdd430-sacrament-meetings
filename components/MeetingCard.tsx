@@ -1,14 +1,15 @@
 import Link from "next/link";
+import { deleteMeeting } from "@/lib/actions";
 import { formatMeetingDate, getMeetingTypeLabel } from "@/lib/meetings-db";
 import type { SacramentMeeting } from "@/lib/types";
 
 export function MeetingCard({ meeting }: { meeting: SacramentMeeting }) {
   const speakers = meeting.speakers.filter((item) => item.type === "speaker");
   return (
-    <li>
+    <li className="rounded-xl border border-slate-200 bg-white shadow-sm">
       <Link
         href={`/meetings/${meeting.id}`}
-        className="block rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-[var(--church-blue)] hover:shadow-md"
+        className="block rounded-t-xl p-5 transition hover:-translate-y-0.5 hover:border-[var(--church-blue)] hover:shadow-md"
       >
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -24,6 +25,10 @@ export function MeetingCard({ meeting }: { meeting: SacramentMeeting }) {
           {speakers.length > 0 && ` · ${speakers.length} speaker${speakers.length === 1 ? "" : "s"}`}
         </p>
       </Link>
+      <form action={deleteMeeting} className="border-t border-stone-200 px-5 py-3">
+        <input name="id" type="hidden" value={meeting.id} />
+        <button className="text-sm font-semibold text-red-700 hover:text-red-900" type="submit">Delete meeting</button>
+      </form>
     </li>
   );
 }
