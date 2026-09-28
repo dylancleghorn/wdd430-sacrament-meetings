@@ -12,7 +12,7 @@ import type { MeetingActionState } from "@/lib/meeting-form-state";
 import type { SacramentMeeting } from "@/lib/types";
 import { requireBishopric } from "@/lib/auth";
 
-const requiredText = z.string().trim().min(1, "This field is required.");
+const requiredText = z.string().trim().min(1, "This field is required.").max(255, "Use 255 characters or fewer.");
 const hymnNumber = z.string()
   .trim()
   .regex(/^\d+$/, "Enter a whole hymn number.")
@@ -20,7 +20,7 @@ const hymnNumber = z.string()
   .pipe(z.number().int().min(0, "Enter zero or a positive hymn number.").max(1000, "Enter a hymn number of 1000 or less."));
 
 const MeetingFormSchema = z.object({
-  date: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/, "Enter a valid meeting date."),
+  date: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/, "Enter a valid meeting date.").refine(isValidIsoDate, "Enter a real calendar date."),
   meetingType: z.enum(["testimony", "regular", "stake", "general", "special"], {
     error: "Choose a meeting type.",
   }),
@@ -34,7 +34,7 @@ const MeetingFormSchema = z.object({
   stakeBusiness: z.preprocess((value) => value === "on", z.boolean()),
   sacramentHymnNumber: hymnNumber,
   sacramentHymnTitle: requiredText,
-  speakers: z.string(),
+  speakers: z.string().superRefine(validateSpeakerRows),
   closingHymnNumber: hymnNumber,
   closingHymnTitle: requiredText,
   closingPrayer: requiredText,
@@ -54,6 +54,9 @@ export async function createMeeting(
   try {
     await addMeeting(validatedMeeting.meeting);
   } catch (error) {
+    if (isDuplicateMeetingDate(error)) {
+      return duplicateDateState();
+    }
     console.error("Unable to create meeting:", error);
     throw new Error("We could not create the meeting. Please try again.");
   }
@@ -77,6 +80,9 @@ export async function updateMeeting(
   try {
     await updateMeetingInDatabase(id, validatedMeeting.meeting);
   } catch (error) {
+    if (isDuplicateMeetingDate(error)) {
+      return duplicateDateState();
+    }
     console.error(`Unable to update meeting ${id}:`, error);
     throw new Error("We could not update the meeting. Please try again.");
   }
@@ -162,7 +168,45 @@ function toLines(value: string): string[] {
 
 function toSpeakers(value: string): SacramentMeeting["speakers"] {
   return toLines(value).map((line) => {
-    const [name = "", topic = "", type = "speaker"] = line.split("|").map((part) => part.trim());
-    return { name, topic, type: type === "musical-number" ? "musical-number" : "speaker" };
+    const [name, topic, type] = line.split("|").map((part) => part.trim()) as [string, string, "speaker" | "musical-number"];
+    return { name, topic, type };
   });
+}
+
+function isValidIsoDate(value: string): boolean {
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+}
+
+function validateSpeakerRows(value: string, context: z.RefinementCtx): void {
+  for (const [index, line] of toLines(value).entries()) {
+    const parts = line.split("|").map((part) => part.trim());
+
+    if (parts.length !== 3) {
+      context.addIssue({ code: "custom", message: `Line ${index + 1} must include a name, topic, and type.` });
+      continue;
+    }
+
+    const row = z.object({
+      name: requiredText,
+      topic: requiredText,
+      type: z.enum(["speaker", "musical-number"], { error: "Use speaker or musical-number." }),
+    }).safeParse({ name: parts[0], topic: parts[1], type: parts[2] });
+
+    if (!row.success) {
+      context.addIssue({ code: "custom", message: `Line ${index + 1}: ${row.error.issues[0]?.message ?? "is invalid."}` });
+    }
+  }
+}
+
+function isDuplicateMeetingDate(error: unknown): boolean {
+  return typeof error === "object" && error !== null && "code" in error && (error as { code?: unknown }).code === "23505";
+}
+
+function duplicateDateState(): MeetingActionState {
+  return {
+    errors: { date: ["A meeting is already scheduled for this date."] },
+    message: "Please choose a different meeting date.",
+  };
 }

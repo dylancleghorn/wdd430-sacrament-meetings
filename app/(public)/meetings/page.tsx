@@ -2,9 +2,8 @@ import Link from "next/link";
 import { MeetingCard } from "@/components/MeetingCard";
 import { MeetingSearch } from "@/components/MeetingSearch";
 import { Pagination } from "@/components/Pagination";
-import { fetchMeetingsApi } from "@/lib/meetings-api";
 import { isBishopricAuthenticated } from "@/lib/auth";
-import type { MeetingListResult } from "@/lib/meetings-db";
+import { getMeetings } from "@/lib/meetings-db";
 
 type MeetingsPageProps = {
   searchParams: Promise<{ query?: string | string[]; page?: string | string[] }>;
@@ -16,19 +15,7 @@ export default async function MeetingsPage({ searchParams }: MeetingsPageProps) 
   const query = typeof params.query === "string" ? params.query : "";
   const requestedPage = typeof params.page === "string" ? Number(params.page) : 1;
   const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
-  const apiParams = new URLSearchParams({ page: String(page) });
-
-  if (query) {
-    apiParams.set("query", query);
-  }
-
-  const response = await fetchMeetingsApi(`/api/meetings?${apiParams}`);
-
-  if (!response.ok) {
-    throw new Error("Unable to load meetings.");
-  }
-
-  const { meetings, currentPage, totalPages, totalMeetings } = await response.json() as MeetingListResult;
+  const { meetings, currentPage, totalPages, totalMeetings } = await getMeetings({ query, page });
 
   return (
     <div className="mx-auto max-w-5xl">

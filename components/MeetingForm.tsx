@@ -23,11 +23,11 @@ export function MeetingForm({ meeting }: MeetingFormProps) {
       <div className="grid gap-5 sm:grid-cols-2">
         <FieldError error={errors.date} id="date-error">
           <label className={labelClassName} htmlFor="date">Meeting date</label>
-          <input aria-describedby="date-error" className={inputClassName} defaultValue={meeting?.date} id="date" name="date" type="date" />
+          <input aria-describedby="date-error" aria-invalid={Boolean(errors.date?.length)} className={inputClassName} defaultValue={meeting?.date} id="date" name="date" type="date" />
         </FieldError>
         <FieldError error={errors.meetingType} id="meetingType-error">
           <label className={labelClassName} htmlFor="meetingType">Meeting type</label>
-          <select aria-describedby="meetingType-error" className={inputClassName} defaultValue={meeting?.meetingType ?? "regular"} id="meetingType" name="meetingType">
+          <select aria-describedby="meetingType-error" aria-invalid={Boolean(errors.meetingType?.length)} className={inputClassName} defaultValue={meeting?.meetingType ?? "regular"} id="meetingType" name="meetingType">
             <option value="regular">Sacrament Meeting</option>
             <option value="testimony">Fast and Testimony Meeting</option>
             <option value="stake">Stake Meeting</option>
@@ -37,11 +37,11 @@ export function MeetingForm({ meeting }: MeetingFormProps) {
         </FieldError>
         <FieldError error={errors.presiding} id="presiding-error">
           <label className={labelClassName} htmlFor="presiding">Presiding</label>
-          <input aria-describedby="presiding-error" className={inputClassName} defaultValue={meeting?.presiding} id="presiding" name="presiding" type="text" />
+          <input aria-describedby="presiding-error" aria-invalid={Boolean(errors.presiding?.length)} className={inputClassName} defaultValue={meeting?.presiding} id="presiding" name="presiding" type="text" />
         </FieldError>
         <FieldError error={errors.conducting} id="conducting-error">
           <label className={labelClassName} htmlFor="conducting">Conducting</label>
-          <input aria-describedby="conducting-error" className={inputClassName} defaultValue={meeting?.conducting} id="conducting" name="conducting" type="text" />
+          <input aria-describedby="conducting-error" aria-invalid={Boolean(errors.conducting?.length)} className={inputClassName} defaultValue={meeting?.conducting} id="conducting" name="conducting" type="text" />
         </FieldError>
       </div>
 
@@ -57,7 +57,7 @@ export function MeetingForm({ meeting }: MeetingFormProps) {
         <h2 className="font-serif text-xl font-semibold text-stone-950" id="program-heading">Program</h2>
         <TextAreaField defaultValue={meeting?.wardBusiness.map((item) => item.description).join("\n")} error={errors.wardBusiness} id="wardBusiness" label="Ward business" name="wardBusiness" hint="Enter one item per line." />
         <div className="flex items-center gap-3">
-          <input aria-describedby="stakeBusiness-error" defaultChecked={meeting?.stakeBusiness} id="stakeBusiness" name="stakeBusiness" type="checkbox" />
+          <input aria-describedby="stakeBusiness-error" aria-invalid={Boolean(errors.stakeBusiness?.length)} defaultChecked={meeting?.stakeBusiness} id="stakeBusiness" name="stakeBusiness" type="checkbox" />
           <label className={labelClassName} htmlFor="stakeBusiness">Include stake business</label>
         </div>
         <p aria-live="polite" className={errorClassName} id="stakeBusiness-error">{errors.stakeBusiness?.join(" ")}</p>
@@ -88,12 +88,12 @@ function HymnFields({ errorNumber, errorTitle, heading, hymn, idPrefix }: { erro
       <div className="mt-2 grid gap-5 sm:grid-cols-3">
         <FieldError error={errorNumber} id={`${numberId}-error`}>
           <label className={labelClassName} htmlFor={numberId}>Number</label>
-          <input aria-describedby={`${numberId}-error`} className={inputClassName} defaultValue={hymn?.number} id={numberId} min="0" name={numberId} type="number" />
+          <input aria-describedby={`${numberId}-error`} aria-invalid={Boolean(errorNumber?.length)} className={inputClassName} defaultValue={hymn?.number} id={numberId} min="0" name={numberId} type="number" />
         </FieldError>
         <div className="sm:col-span-2">
           <FieldError error={errorTitle} id={`${titleId}-error`}>
             <label className={labelClassName} htmlFor={titleId}>Title</label>
-            <input aria-describedby={`${titleId}-error`} className={inputClassName} defaultValue={hymn?.title} id={titleId} name={titleId} type="text" />
+            <input aria-describedby={`${titleId}-error`} aria-invalid={Boolean(errorTitle?.length)} className={inputClassName} defaultValue={hymn?.title} id={titleId} name={titleId} type="text" />
           </FieldError>
         </div>
       </div>
@@ -102,11 +102,11 @@ function HymnFields({ errorNumber, errorTitle, heading, hymn, idPrefix }: { erro
 }
 
 function TextField({ defaultValue, error, id, label, name }: { defaultValue?: string; error?: string[]; id: string; label: string; name: string }) {
-  return <FieldError error={error} id={`${id}-error`}><label className={labelClassName} htmlFor={id}>{label}</label><input aria-describedby={`${id}-error`} className={inputClassName} defaultValue={defaultValue} id={id} name={name} type="text" /></FieldError>;
+  return <FieldError error={error} id={`${id}-error`}><label className={labelClassName} htmlFor={id}>{label}</label><input aria-describedby={`${id}-error`} aria-invalid={Boolean(error?.length)} className={inputClassName} defaultValue={defaultValue} id={id} name={name} type="text" /></FieldError>;
 }
 
 function TextAreaField({ defaultValue, error, hint, id, label, name }: { defaultValue?: string; error?: string[]; hint: string; id: string; label: string; name: string }) {
-  return <FieldError error={error} id={`${id}-error`}><label className={labelClassName} htmlFor={id}>{label}</label><textarea aria-describedby={`${id}-error ${id}-hint`} className={inputClassName} defaultValue={defaultValue} id={id} name={name} rows={3} /><p className="mt-1 text-sm text-stone-600" id={`${id}-hint`}>{hint}</p></FieldError>;
+  return <FieldError error={error} id={`${id}-error`}><label className={labelClassName} htmlFor={id}>{label}</label><textarea aria-describedby={`${id}-error ${id}-hint`} aria-invalid={Boolean(error?.length)} className={inputClassName} defaultValue={defaultValue} id={id} name={name} rows={3} /><p className="mt-1 text-sm text-stone-600" id={`${id}-hint`}>{hint}</p></FieldError>;
 }
 
 function FieldError({ children, error, id }: { children: React.ReactNode; error?: string[]; id: string }) {
