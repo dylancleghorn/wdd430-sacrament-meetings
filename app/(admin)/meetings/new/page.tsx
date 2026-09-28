@@ -1,6 +1,9 @@
 import { MeetingForm } from "@/components/MeetingForm";
+import { requireBishopric } from "@/lib/auth";
 
-export default function NewMeetingPage() {
+export default async function NewMeetingPage() {
+  await requireBishopric("/meetings/new");
+
   return (
     <>
       <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--church-blue-dark)]">Leader tools</p>

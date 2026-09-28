@@ -16,7 +16,10 @@ export function Header() {
           </p>
           <p className="mt-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-slate-500">The Church of Jesus Christ of Latter-day Saints</p>
         </Link>
-        <p className="hidden text-right text-sm text-stone-500 sm:block">{today}</p>
+        <div className="hidden text-right sm:block">
+          <p className="text-sm text-stone-500">{today}</p>
+          <Link className="mt-1 inline-block text-sm font-semibold text-[var(--church-blue-dark)] hover:text-slate-950" href="/login">Leader sign in</Link>
+        </div>
       </div>
     </header>
   );

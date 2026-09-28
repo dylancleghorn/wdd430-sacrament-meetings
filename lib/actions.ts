@@ -10,6 +10,7 @@ import {
 } from "@/lib/meetings-db";
 import type { MeetingActionState } from "@/lib/meeting-form-state";
 import type { SacramentMeeting } from "@/lib/types";
+import { requireBishopric } from "@/lib/auth";
 
 const requiredText = z.string().trim().min(1, "This field is required.");
 const hymnNumber = z.string()
@@ -43,6 +44,7 @@ export async function createMeeting(
   _prevState: MeetingActionState,
   formData: FormData,
 ): Promise<MeetingActionState> {
+  await requireBishopric();
   const validatedMeeting = validateMeeting(formData);
 
   if (!validatedMeeting.success) {
@@ -65,6 +67,7 @@ export async function updateMeeting(
   _prevState: MeetingActionState,
   formData: FormData,
 ): Promise<MeetingActionState> {
+  await requireBishopric();
   const validatedMeeting = validateMeeting(formData);
 
   if (!validatedMeeting.success) {
@@ -83,6 +86,7 @@ export async function updateMeeting(
 }
 
 export async function deleteMeeting(formData: FormData): Promise<void> {
+  await requireBishopric();
   const parsedId = z.coerce.number().int().positive().safeParse(formData.get("id"));
 
   if (!parsedId.success) {

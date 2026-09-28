@@ -16,8 +16,16 @@ const merriweather = Merriweather({
 });
 
 export const metadata: Metadata = {
-  title: "Sousas Ward | Sacrament Meeting Planner",
+  title: {
+    default: "Sousas Ward | Sacrament Meeting Planner",
+    template: "%s | Sousas Ward",
+  },
   description: "View and print current and past sacrament meeting programs.",
+  openGraph: {
+    title: "Sousas Ward | Sacrament Meeting Planner",
+    description: "View and print current and past sacrament meeting programs.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { MeetingCard } from "@/components/MeetingCard";
 import { MeetingSearch } from "@/components/MeetingSearch";
 import { Pagination } from "@/components/Pagination";
 import { fetchMeetingsApi } from "@/lib/meetings-api";
+import { isBishopricAuthenticated } from "@/lib/auth";
 import type { MeetingListResult } from "@/lib/meetings-db";
 
 type MeetingsPageProps = {
@@ -9,6 +11,7 @@ type MeetingsPageProps = {
 };
 
 export default async function MeetingsPage({ searchParams }: MeetingsPageProps) {
+  const canManage = await isBishopricAuthenticated();
   const params = await searchParams;
   const query = typeof params.query === "string" ? params.query : "";
   const requestedPage = typeof params.page === "string" ? Number(params.page) : 1;
@@ -31,7 +34,10 @@ export default async function MeetingsPage({ searchParams }: MeetingsPageProps) 
     <div className="mx-auto max-w-5xl">
       <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--church-blue-dark)]">Programs</p>
       <h1 className="mt-2 font-serif text-3xl font-semibold text-stone-950">All meetings</h1>
-      <p className="mt-3 max-w-2xl text-stone-600">Choose a meeting to view its complete agenda or print a copy of the program.</p>
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+        <p className="max-w-2xl text-stone-600">Choose a meeting to view its complete agenda or print a copy of the program.</p>
+        {canManage && <Link className="rounded-lg bg-[var(--church-blue-dark)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--church-blue)]" href="/meetings/new">Create meeting</Link>}
+      </div>
 
       <MeetingSearch />
 
@@ -45,7 +51,7 @@ export default async function MeetingsPage({ searchParams }: MeetingsPageProps) 
             Showing {meetings.length} of {totalMeetings} meeting{totalMeetings === 1 ? "" : "s"}.
           </p>
           <ul className="mt-4 grid gap-4 md:grid-cols-2">
-            {meetings.map((meeting) => <MeetingCard key={meeting.id} meeting={meeting} />)}
+            {meetings.map((meeting) => <MeetingCard canManage={canManage} key={meeting.id} meeting={meeting} />)}
           </ul>
         </>
       )}

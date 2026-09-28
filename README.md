@@ -18,6 +18,19 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
+## Bishopric access
+
+Create a Google OAuth web application and add `http://localhost:3000/api/auth/callback/google` as a development authorized redirect URI. Then set these environment variables before using the leader tools:
+
+```env
+NEXTAUTH_SECRET=use-a-long-random-value
+GOOGLE_CLIENT_ID=your-google-oauth-client-id
+GOOGLE_CLIENT_SECRET=your-google-oauth-client-secret
+BISHOPRIC_EMAILS=bishop@example.com,counselor@example.com
+```
+
+Only Google accounts listed in `BISHOPRIC_EMAILS` can access leader tools. The `/meetings/new` and `/meetings/[id]/edit` pages require this sign-in, and meeting create, update, and delete actions also verify the session on the server.
+
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More

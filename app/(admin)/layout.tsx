@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SignOutButton } from "@/components/SignOutButton";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -6,7 +7,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="mx-auto w-full max-w-3xl">
         <div className="mb-8 flex items-center justify-between border-b border-stone-200 pb-4">
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[var(--church-blue-dark)]">Leader tools</p>
-          <Link href="/meetings" className="text-sm font-semibold text-[var(--church-blue-dark)] hover:text-slate-950">View meetings</Link>
+          <div className="flex items-center gap-4">
+            <Link href="/meetings" className="text-sm font-semibold text-[var(--church-blue-dark)] hover:text-slate-950">View meetings</Link>
+            <SignOutButton />
+          </div>
         </div>
         {children}
       </div>

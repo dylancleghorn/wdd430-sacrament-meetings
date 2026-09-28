@@ -3,7 +3,7 @@ import { DeleteMeetingButton } from "@/components/DeleteMeetingButton";
 import { formatMeetingDate, getMeetingTypeLabel } from "@/lib/meetings-db";
 import type { SacramentMeeting } from "@/lib/types";
 
-export function MeetingCard({ meeting }: { meeting: SacramentMeeting }) {
+export function MeetingCard({ canManage = false, meeting }: { canManage?: boolean; meeting: SacramentMeeting }) {
   const speakers = meeting.speakers.filter((item) => item.type === "speaker");
   return (
     <li className="rounded-xl border border-slate-200 bg-white shadow-sm">
@@ -25,9 +25,12 @@ export function MeetingCard({ meeting }: { meeting: SacramentMeeting }) {
           {speakers.length > 0 && ` · ${speakers.length} speaker${speakers.length === 1 ? "" : "s"}`}
         </p>
       </Link>
-      <div className="border-t border-stone-200 px-5 py-3">
-        <DeleteMeetingButton meetingId={meeting.id} />
-      </div>
+      {canManage && (
+        <div className="flex items-center justify-between border-t border-stone-200 px-5 py-3">
+          <Link className="text-sm font-semibold text-[var(--church-blue-dark)] hover:text-slate-950" href={`/meetings/${meeting.id}/edit`}>Edit meeting</Link>
+          <DeleteMeetingButton meetingId={meeting.id} />
+        </div>
+      )}
     </li>
   );
 }

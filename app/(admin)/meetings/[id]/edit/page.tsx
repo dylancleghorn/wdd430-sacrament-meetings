@@ -1,6 +1,7 @@
 import { MeetingForm } from "@/components/MeetingForm";
 import { getMeetingById } from "@/lib/meetings-db";
 import { notFound } from "next/navigation";
+import { requireBishopric } from "@/lib/auth";
 
 type EditMeetingPageProps = {
   params: Promise<{ id: string }>;
@@ -8,6 +9,7 @@ type EditMeetingPageProps = {
 
 export default async function EditMeetingPage({ params }: EditMeetingPageProps) {
   const { id } = await params;
+  await requireBishopric(`/meetings/${id}/edit`);
   const meetingId = Number(id);
 
   if (!Number.isSafeInteger(meetingId) || meetingId < 1) {
